@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Timothy Tey">
+<meta name="dcterms.date" content="2025-12-27">
+
+<title>Helios Corn Futures Data Challenge (EDA)</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="index_files/libs/clipboard/clipboard.min.js"></script>
+<script src="index_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="index_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="index_files/libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="index_files/libs/quarto-html/popper.min.js"></script>
+<script src="index_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="index_files/libs/quarto-html/anchor.min.js"></script>
+<link href="index_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="index_files/libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="index_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="index_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="index_files/libs/bootstrap/bootstrap-d6a003b94517c951b2d65075d42fb01b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#exploratory-data-analysis-eda-contents" id="toc-exploratory-data-analysis-eda-contents" class="nav-link active" data-scroll-target="#exploratory-data-analysis-eda-contents">Exploratory Data Analysis (EDA) Contents</a></li>
+  <li><a href="#import-libraries" id="toc-import-libraries" class="nav-link" data-scroll-target="#import-libraries">Import Libraries</a></li>
+  <li><a href="#import-main-dataset" id="toc-import-main-dataset" class="nav-link" data-scroll-target="#import-main-dataset">Import Main Dataset</a></li>
+  <li><a href="#storing-countries-and-regions" id="toc-storing-countries-and-regions" class="nav-link" data-scroll-target="#storing-countries-and-regions">Storing Countries and Regions</a></li>
+  <li><a href="#nullity-plots" id="toc-nullity-plots" class="nav-link" data-scroll-target="#nullity-plots">1. Nullity Plot(s)</a></li>
+  <li><a href="#time-series-plots" id="toc-time-series-plots" class="nav-link" data-scroll-target="#time-series-plots">2. Time Series Plot(s)</a></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Helios Corn Futures Data Challenge (EDA)</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">code</div>
+    <div class="quarto-category">analysis</div>
+  </div>
+  </div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Timothy Tey </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">27 December 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="exploratory-data-analysis-eda-contents" class="level1">
+<h1>Exploratory Data Analysis (EDA) Contents</h1>
+<ol type="1">
+<li>Nullity Analysis</li>
+<li>Time Series Plots</li>
+<li>Scatterplots</li>
+<li>Distributional Plots</li>
+</ol>
+</section>
+<section id="import-libraries" class="level1">
+<h1>Import Libraries</h1>
+<div id="eeea4b39" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statistics</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> missingno <span class="im">as</span> msno</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="import-main-dataset" class="level1">
+<h1>Import Main Dataset</h1>
+<div id="59bca1ab" class="cell" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>raw_data <span class="op">=</span> pd.read_csv(<span class="st">'corn_climate_risk_futures_daily_master.csv'</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>raw_data.head()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="74">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">ID</th>
+<th data-quarto-table-cell-role="th">crop_name</th>
+<th data-quarto-table-cell-role="th">country_name</th>
+<th data-quarto-table-cell-role="th">country_code</th>
+<th data-quarto-table-cell-role="th">region_name</th>
+<th data-quarto-table-cell-role="th">region_id</th>
+<th data-quarto-table-cell-role="th">harvest_period</th>
+<th data-quarto-table-cell-role="th">growing_season_year</th>
+<th data-quarto-table-cell-role="th">date_on</th>
+<th data-quarto-table-cell-role="th">climate_risk_cnt_locations_heat_stress_risk_low</th>
+<th data-quarto-table-cell-role="th">...</th>
+<th data-quarto-table-cell-role="th">futures_zc1_ma_120</th>
+<th data-quarto-table-cell-role="th">futures_zc1_vol_20</th>
+<th data-quarto-table-cell-role="th">futures_zc1_vol_60</th>
+<th data-quarto-table-cell-role="th">futures_zw_zc_spread</th>
+<th data-quarto-table-cell-role="th">futures_zc_zw_ratio</th>
+<th data-quarto-table-cell-role="th">futures_zs_zc_spread</th>
+<th data-quarto-table-cell-role="th">futures_zc_zs_ratio</th>
+<th data-quarto-table-cell-role="th">date_on_year</th>
+<th data-quarto-table-cell-role="th">date_on_month</th>
+<th data-quarto-table-cell-role="th">date_on_year_month</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">0</th>
+<td>8af42722-3f05-4ede-80fc-605e0e2b3b67</td>
+<td>Corn: Commodity Tracked</td>
+<td>Argentina</td>
+<td>AR</td>
+<td>Buenos Aires</td>
+<td>bffad37a-7c60-432f-984a-8ea83a944311</td>
+<td>Harvest</td>
+<td>2017</td>
+<td>2016-06-15</td>
+<td>23</td>
+<td>...</td>
+<td>375.014583</td>
+<td>0.013520</td>
+<td>0.015724</td>
+<td>48.50</td>
+<td>0.898429</td>
+<td>727.00</td>
+<td>0.371107</td>
+<td>2016</td>
+<td>6</td>
+<td>2016_06</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">1</th>
+<td>54f4ddc5-e7ab-4bfb-ad6a-5649841af563</td>
+<td>Corn: Commodity Tracked</td>
+<td>Argentina</td>
+<td>AR</td>
+<td>Buenos Aires</td>
+<td>bffad37a-7c60-432f-984a-8ea83a944311</td>
+<td>Harvest</td>
+<td>2017</td>
+<td>2016-06-16</td>
+<td>23</td>
+<td>...</td>
+<td>375.512500</td>
+<td>0.013799</td>
+<td>0.015792</td>
+<td>47.25</td>
+<td>0.900000</td>
+<td>709.25</td>
+<td>0.374835</td>
+<td>2016</td>
+<td>6</td>
+<td>2016_06</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">2</th>
+<td>63a41fce-d371-4295-a58a-dc6491664020</td>
+<td>Corn: Commodity Tracked</td>
+<td>Argentina</td>
+<td>AR</td>
+<td>Buenos Aires</td>
+<td>bffad37a-7c60-432f-984a-8ea83a944311</td>
+<td>Harvest</td>
+<td>2017</td>
+<td>2016-06-17</td>
+<td>23</td>
+<td>...</td>
+<td>376.122917</td>
+<td>0.013442</td>
+<td>0.016145</td>
+<td>43.50</td>
+<td>0.909610</td>
+<td>721.75</td>
+<td>0.377533</td>
+<td>2016</td>
+<td>6</td>
+<td>2016_06</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">3</th>
+<td>cddfa440-e0eb-4735-beb1-1aca2afefe53</td>
+<td>Corn: Commodity Tracked</td>
+<td>Argentina</td>
+<td>AR</td>
+<td>Buenos Aires</td>
+<td>bffad37a-7c60-432f-984a-8ea83a944311</td>
+<td>Harvest</td>
+<td>2017</td>
+<td>2016-06-18</td>
+<td>23</td>
+<td>...</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>2016</td>
+<td>6</td>
+<td>2016_06</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">4</th>
+<td>3eaacfe1-29be-4da9-b5c9-a9457d2d2b83</td>
+<td>Corn: Commodity Tracked</td>
+<td>Argentina</td>
+<td>AR</td>
+<td>Buenos Aires</td>
+<td>bffad37a-7c60-432f-984a-8ea83a944311</td>
+<td>Harvest</td>
+<td>2017</td>
+<td>2016-06-19</td>
+<td>23</td>
+<td>...</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>2016</td>
+<td>6</td>
+<td>2016_06</td>
+</tr>
+</tbody>
+</table>
+
+<p>5 rows × 41 columns</p>
+</div>
+</div>
+</div>
+<div id="7883709d" class="cell" data-execution_count="3">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(raw_data.shape)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(raw_data.columns)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(raw_data[<span class="st">'country_name'</span>].unique())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>(320661, 41)
+Index(['ID', 'crop_name', 'country_name', 'country_code', 'region_name',
+       'region_id', 'harvest_period', 'growing_season_year', 'date_on',
+       'climate_risk_cnt_locations_heat_stress_risk_low',
+       'climate_risk_cnt_locations_heat_stress_risk_medium',
+       'climate_risk_cnt_locations_heat_stress_risk_high',
+       'climate_risk_cnt_locations_unseasonably_cold_risk_low',
+       'climate_risk_cnt_locations_unseasonably_cold_risk_medium',
+       'climate_risk_cnt_locations_unseasonably_cold_risk_high',
+       'climate_risk_cnt_locations_excess_precip_risk_low',
+       'climate_risk_cnt_locations_excess_precip_risk_medium',
+       'climate_risk_cnt_locations_excess_precip_risk_high',
+       'climate_risk_cnt_locations_drought_risk_low',
+       'climate_risk_cnt_locations_drought_risk_medium',
+       'climate_risk_cnt_locations_drought_risk_high', 'futures_close_ZC_1',
+       'futures_close_ZC_2', 'futures_close_ZW_1', 'futures_close_ZS_1',
+       'futures_zc1_ret_pct', 'futures_zc1_ret_log', 'futures_zc_term_spread',
+       'futures_zc_term_ratio', 'futures_zc1_ma_20', 'futures_zc1_ma_60',
+       'futures_zc1_ma_120', 'futures_zc1_vol_20', 'futures_zc1_vol_60',
+       'futures_zw_zc_spread', 'futures_zc_zw_ratio', 'futures_zs_zc_spread',
+       'futures_zc_zs_ratio', 'date_on_year', 'date_on_month',
+       'date_on_year_month'],
+      dtype='object')
+['Argentina' 'Brazil' 'Canada' 'China' 'India' 'Mexico' 'Paraguay'
+ 'Russia' 'South Africa' 'Ukraine' 'United States']</code></pre>
+</div>
+</div>
+</section>
+<section id="storing-countries-and-regions" class="level1">
+<h1>Storing Countries and Regions</h1>
+<div id="a8ee5d86" class="cell" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>country_names <span class="op">=</span> raw_data[<span class="st">'country_name'</span>].unique().tolist()</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>country_region <span class="op">=</span> <span class="bu">dict</span>()</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(country_names)):</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    specific_country <span class="op">=</span> country_names[i]</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="co">#Only looks on specific_country and we seek the regions name</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    filtered_df <span class="op">=</span> raw_data[raw_data[<span class="st">'country_name'</span>] <span class="op">==</span> specific_country]</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    specific_regions <span class="op">=</span> filtered_df[<span class="st">'region_name'</span>].unique().tolist()</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="co">#Store them into dictionaries</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    country_region[specific_country] <span class="op">=</span> specific_regions</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>country_region</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="76">
+<pre><code>{'Argentina': ['Buenos Aires',
+  'Córdoba',
+  'Entre Ríos',
+  'Santa Fe',
+  'Santiago del Estero'],
+ 'Brazil': ['Bahia',
+  'Espírito Santo',
+  'Goiás',
+  'Mato Grosso',
+  'Mato Grosso do Sul',
+  'Minas Gerais',
+  'Paraná',
+  'Rio Grande do Sul'],
+ 'Canada': ['Ontario', 'Quebec'],
+ 'China': ['Hebei',
+  'Heilongjiang',
+  'Henan',
+  'Inner Mongolia',
+  'Jiangsu',
+  'Jilin',
+  'Shandong'],
+ 'India': ['Bihar',
+  'Karnataka',
+  'Madhya Pradesh',
+  'Maharashtra',
+  'Tamil Nadu',
+  'Telangana'],
+ 'Mexico': ['Guanajuato',
+  'Guerrero',
+  'Jalisco',
+  'Michoacán',
+  'Sinaloa',
+  'State of Mexico',
+  'Zacatecas'],
+ 'Paraguay': ['Alto Paraná',
+  'Amambay',
+  'Caaguazú',
+  'Canindeyú',
+  'Itapúa',
+  'San Pedro'],
+ 'Russia': ['Bashkortostan',
+  'Belgorod',
+  'Bryansk',
+  'Kabardino-Balkaria',
+  'Krasnodar Krai',
+  'Krasnoyarsk Krai',
+  'Kursk',
+  'Lipetsk',
+  'Nizhny Novgorod',
+  'Orenburg',
+  'Oryol',
+  'Penza',
+  'Republic of Ingushetia',
+  'Republic of Mordovia',
+  'Republic of North Ossetia-Alania',
+  'Republic of Tatarstan',
+  'Rostov',
+  'Ryazan',
+  'Samara',
+  'Saratov',
+  'Stavropol Krai',
+  'Tambov',
+  'Tula',
+  'Ulyanovsk',
+  'Voronezh'],
+ 'South Africa': ['Free State',
+  'Gauteng',
+  'KwaZulu-Natal',
+  'Mpumalanga',
+  'North West',
+  'Northern Cape'],
+ 'Ukraine': ['Cherkasy',
+  'Dnipropetrovsk',
+  'Odessa',
+  'Poltava',
+  'Sumy',
+  'Vinnytsia'],
+ 'United States': ['Illinois',
+  'Indiana',
+  'Iowa',
+  'Kansas',
+  'Minnesota',
+  'Missouri',
+  'Nebraska',
+  'North Dakota',
+  'Ohio',
+  'South Dakota',
+  'Wisconsin']}</code></pre>
+</div>
+</div>
+</section>
+<section id="nullity-plots" class="level1">
+<h1>1. Nullity Plot(s)</h1>
+<p>Futures columns have missing values due to non-trading days.</p>
+<div id="c6b77b57" class="cell" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>msno.matrix(raw_data, figsize<span class="op">=</span>(<span class="dv">8</span>,<span class="dv">4</span>), fontsize<span class="op">=</span><span class="dv">4</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-6-output-1.png" width="654" height="445" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="time-series-plots" class="level1">
+<h1>2. Time Series Plot(s)</h1>
+<p>Need to seperate the dataset into different regions (the dataset is from 2015 to 2024)</p>
+<p>Try to split the dataset first wrt specific regions</p>
+<div id="31da469d" class="cell" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>df_cols <span class="op">=</span> raw_data.columns.tolist()</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>deleted_cols <span class="op">=</span> [<span class="st">'ID'</span>, <span class="st">'crop_name'</span>, <span class="st">'country_name'</span>, <span class="st">'country_code'</span>, <span class="st">'region_id'</span>]</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>df_cols_needed <span class="op">=</span> [col <span class="cf">for</span> col <span class="kw">in</span> df_cols <span class="cf">if</span> col <span class="kw">not</span> <span class="kw">in</span> deleted_cols]</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(df_cols_needed)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> country, regions <span class="kw">in</span> country_region.items():</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(regions)):</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>        specific_region <span class="op">=</span> regions[i]</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>        filtered_country_df <span class="op">=</span> raw_data[raw_data[<span class="st">'country_name'</span>] <span class="op">==</span> country]</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>        filtered_country_region_df <span class="op">=</span> filtered_country_df[filtered_country_df[<span class="st">'region_name'</span>] <span class="op">==</span> specific_region]</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>        filtered_country_region_df <span class="op">=</span> filtered_country_region_df.loc[:, df_cols_needed]</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>        filtered_country_region_df[<span class="st">"date_on"</span>] <span class="op">=</span> pd.to_datetime(filtered_country_region_df[<span class="st">"date_on"</span>])</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>        filtered_country_region_df <span class="op">=</span> filtered_country_region_df.sort_values(by<span class="op">=</span><span class="st">"date_on"</span>, ascending<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>        output_dir <span class="op">=</span> <span class="ss">f'./</span><span class="sc">{</span>country<span class="sc">}</span><span class="ss">'</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>        os.makedirs(output_dir, exist_ok<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>        file_name <span class="op">=</span> <span class="ss">f'raw_</span><span class="sc">{</span>specific_region<span class="sc">}</span><span class="ss">.csv'</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>        full_path <span class="op">=</span> os.path.join(output_dir, file_name)</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>        filtered_country_region_df.to_csv(full_path, index<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="st">"All dataset are succesfully categorised."</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>['region_name', 'harvest_period', 'growing_season_year', 'date_on', 'climate_risk_cnt_locations_heat_stress_risk_low', 'climate_risk_cnt_locations_heat_stress_risk_medium', 'climate_risk_cnt_locations_heat_stress_risk_high', 'climate_risk_cnt_locations_unseasonably_cold_risk_low', 'climate_risk_cnt_locations_unseasonably_cold_risk_medium', 'climate_risk_cnt_locations_unseasonably_cold_risk_high', 'climate_risk_cnt_locations_excess_precip_risk_low', 'climate_risk_cnt_locations_excess_precip_risk_medium', 'climate_risk_cnt_locations_excess_precip_risk_high', 'climate_risk_cnt_locations_drought_risk_low', 'climate_risk_cnt_locations_drought_risk_medium', 'climate_risk_cnt_locations_drought_risk_high', 'futures_close_ZC_1', 'futures_close_ZC_2', 'futures_close_ZW_1', 'futures_close_ZS_1', 'futures_zc1_ret_pct', 'futures_zc1_ret_log', 'futures_zc_term_spread', 'futures_zc_term_ratio', 'futures_zc1_ma_20', 'futures_zc1_ma_60', 'futures_zc1_ma_120', 'futures_zc1_vol_20', 'futures_zc1_vol_60', 'futures_zw_zc_spread', 'futures_zc_zw_ratio', 'futures_zs_zc_spread', 'futures_zc_zs_ratio', 'date_on_year', 'date_on_month', 'date_on_year_month']
+All dataset are succesfully categorised.</code></pre>
+</div>
+</div>
+<p>See how it goes.</p>
+<div id="6bc897ff" class="cell" data-execution_count="7">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>testing <span class="op">=</span> pd.read_csv(<span class="st">"./Argentina/raw_Buenos Aires.csv"</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>testing</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="79">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">region_name</th>
+<th data-quarto-table-cell-role="th">harvest_period</th>
+<th data-quarto-table-cell-role="th">growing_season_year</th>
+<th data-quarto-table-cell-role="th">date_on</th>
+<th data-quarto-table-cell-role="th">climate_risk_cnt_locations_heat_stress_risk_low</th>
+<th data-quarto-table-cell-role="th">climate_risk_cnt_locations_heat_stress_risk_medium</th>
+<th data-quarto-table-cell-role="th">climate_risk_cnt_locations_heat_stress_risk_high</th>
+<th data-quarto-table-cell-role="th">climate_risk_cnt_locations_unseasonably_cold_risk_low</th>
+<th data-quarto-table-cell-role="th">climate_risk_cnt_locations_unseasonably_cold_risk_medium</th>
+<th data-quarto-table-cell-role="th">climate_risk_cnt_locations_unseasonably_cold_risk_high</th>
+<th data-quarto-table-cell-role="th">...</th>
+<th data-quarto-table-cell-role="th">futures_zc1_ma_120</th>
+<th data-quarto-table-cell-role="th">futures_zc1_vol_20</th>
+<th data-quarto-table-cell-role="th">futures_zc1_vol_60</th>
+<th data-quarto-table-cell-role="th">futures_zw_zc_spread</th>
+<th data-quarto-table-cell-role="th">futures_zc_zw_ratio</th>
+<th data-quarto-table-cell-role="th">futures_zs_zc_spread</th>
+<th data-quarto-table-cell-role="th">futures_zc_zs_ratio</th>
+<th data-quarto-table-cell-role="th">date_on_year</th>
+<th data-quarto-table-cell-role="th">date_on_month</th>
+<th data-quarto-table-cell-role="th">date_on_year_month</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">0</th>
+<td>Buenos Aires</td>
+<td>Harvest</td>
+<td>2017</td>
+<td>2016-06-15</td>
+<td>23</td>
+<td>0</td>
+<td>0</td>
+<td>23</td>
+<td>0</td>
+<td>0</td>
+<td>...</td>
+<td>375.014583</td>
+<td>0.013520</td>
+<td>0.015724</td>
+<td>48.50</td>
+<td>0.898429</td>
+<td>727.00</td>
+<td>0.371107</td>
+<td>2016</td>
+<td>6</td>
+<td>2016_06</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">1</th>
+<td>Buenos Aires</td>
+<td>Harvest</td>
+<td>2017</td>
+<td>2016-06-16</td>
+<td>23</td>
+<td>0</td>
+<td>0</td>
+<td>23</td>
+<td>0</td>
+<td>0</td>
+<td>...</td>
+<td>375.512500</td>
+<td>0.013799</td>
+<td>0.015792</td>
+<td>47.25</td>
+<td>0.900000</td>
+<td>709.25</td>
+<td>0.374835</td>
+<td>2016</td>
+<td>6</td>
+<td>2016_06</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">2</th>
+<td>Buenos Aires</td>
+<td>Harvest</td>
+<td>2017</td>
+<td>2016-06-17</td>
+<td>23</td>
+<td>0</td>
+<td>0</td>
+<td>14</td>
+<td>1</td>
+<td>8</td>
+<td>...</td>
+<td>376.122917</td>
+<td>0.013442</td>
+<td>0.016145</td>
+<td>43.50</td>
+<td>0.909610</td>
+<td>721.75</td>
+<td>0.377533</td>
+<td>2016</td>
+<td>6</td>
+<td>2016_06</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">3</th>
+<td>Buenos Aires</td>
+<td>Harvest</td>
+<td>2017</td>
+<td>2016-06-18</td>
+<td>23</td>
+<td>0</td>
+<td>0</td>
+<td>20</td>
+<td>0</td>
+<td>3</td>
+<td>...</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>2016</td>
+<td>6</td>
+<td>2016_06</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">4</th>
+<td>Buenos Aires</td>
+<td>Harvest</td>
+<td>2017</td>
+<td>2016-06-19</td>
+<td>23</td>
+<td>0</td>
+<td>0</td>
+<td>21</td>
+<td>2</td>
+<td>0</td>
+<td>...</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>2016</td>
+<td>6</td>
+<td>2016_06</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">...</th>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">3464</th>
+<td>Buenos Aires</td>
+<td>Planting</td>
+<td>2026</td>
+<td>2025-12-11</td>
+<td>23</td>
+<td>0</td>
+<td>0</td>
+<td>23</td>
+<td>0</td>
+<td>0</td>
+<td>...</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>2025</td>
+<td>12</td>
+<td>2025_12</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">3465</th>
+<td>Buenos Aires</td>
+<td>Planting</td>
+<td>2026</td>
+<td>2025-12-12</td>
+<td>22</td>
+<td>1</td>
+<td>0</td>
+<td>23</td>
+<td>0</td>
+<td>0</td>
+<td>...</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>2025</td>
+<td>12</td>
+<td>2025_12</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">3466</th>
+<td>Buenos Aires</td>
+<td>Planting</td>
+<td>2026</td>
+<td>2025-12-13</td>
+<td>20</td>
+<td>0</td>
+<td>3</td>
+<td>23</td>
+<td>0</td>
+<td>0</td>
+<td>...</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>2025</td>
+<td>12</td>
+<td>2025_12</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">3467</th>
+<td>Buenos Aires</td>
+<td>Planting</td>
+<td>2026</td>
+<td>2025-12-14</td>
+<td>23</td>
+<td>0</td>
+<td>0</td>
+<td>23</td>
+<td>0</td>
+<td>0</td>
+<td>...</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>2025</td>
+<td>12</td>
+<td>2025_12</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">3468</th>
+<td>Buenos Aires</td>
+<td>Planting</td>
+<td>2026</td>
+<td>2025-12-15</td>
+<td>23</td>
+<td>0</td>
+<td>0</td>
+<td>23</td>
+<td>0</td>
+<td>0</td>
+<td>...</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>NaN</td>
+<td>2025</td>
+<td>12</td>
+<td>2025_12</td>
+</tr>
+</tbody>
+</table>
+
+<p>3469 rows × 36 columns</p>
+</div>
+</div>
+</div>
+<p>We need to sort the data by datetime</p>
+<div id="36352e3b" class="cell" data-execution_count="8">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>msno.matrix(testing, fontsize<span class="op">=</span><span class="dv">4</span>, label_rotation<span class="op">=</span><span class="dv">45</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-9-output-1.png" width="1911" height="889" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

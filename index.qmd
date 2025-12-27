@@ -1,0 +1,108 @@
+---
+title: "Helios Corn Futures Data Challenge (EDA)"
+author: "Timothy Tey"
+date: today
+date-format: "D MMMM YYYY"
+categories: [code, analysis]
+toc: true
+execute:
+    error: false
+    freeze: true
+---
+
+# Exploratory Data Analysis (EDA) Contents
+1. Nullity Analysis
+2. Time Series Plots
+3. Scatterplots
+4. Distributional Plots
+
+# Import Libraries
+```{python}
+import pandas as pd
+import numpy as np
+import statistics
+import missingno as msno
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+import os
+```
+
+# Import Main Dataset
+```{python}
+raw_data = pd.read_csv('corn_climate_risk_futures_daily_master.csv')
+raw_data.head()
+```
+
+```{python}
+print(raw_data.shape)
+print(raw_data.columns)
+print(raw_data['country_name'].unique())
+```
+
+# Storing Countries and Regions 
+```{python}
+country_names = raw_data['country_name'].unique().tolist()
+country_region = dict()
+
+for i in range(len(country_names)):
+    specific_country = country_names[i]
+    #Only looks on specific_country and we seek the regions name
+    filtered_df = raw_data[raw_data['country_name'] == specific_country]
+    specific_regions = filtered_df['region_name'].unique().tolist()
+    #Store them into dictionaries
+    country_region[specific_country] = specific_regions
+
+country_region
+```
+
+# 1. Nullity Plot(s)
+Futures columns have missing values due to non-trading days.
+```{python}
+msno.matrix(raw_data, figsize=(8,4), fontsize=4)
+```
+
+
+# 2. Time Series Plot(s)
+Need to seperate the dataset into different regions (the dataset is from 2015 to 2024)
+
+Try to split the dataset first wrt specific regions
+```{python}
+df_cols = raw_data.columns.tolist()
+deleted_cols = ['ID', 'crop_name', 'country_name', 'country_code', 'region_id']
+df_cols_needed = [col for col in df_cols if col not in deleted_cols]
+
+print(df_cols_needed)
+
+for country, regions in country_region.items():
+    for i in range(len(regions)):
+        specific_region = regions[i]
+
+        filtered_country_df = raw_data[raw_data['country_name'] == country]
+        filtered_country_region_df = filtered_country_df[filtered_country_df['region_name'] == specific_region]
+
+        filtered_country_region_df = filtered_country_region_df.loc[:, df_cols_needed]
+        filtered_country_region_df["date_on"] = pd.to_datetime(filtered_country_region_df["date_on"])
+        filtered_country_region_df = filtered_country_region_df.sort_values(by="date_on", ascending=True)
+
+        # output_dir = f'./{country}'
+        # os.makedirs(output_dir, exist_ok=True)
+
+        # file_name = f'raw_{specific_region}.csv'
+        # full_path = os.path.join(output_dir, file_name)
+        # filtered_country_region_df.to_csv(full_path, index=False)
+
+print("All dataset are succesfully categorised.")
+```
+
+See how it goes.
+```{python}
+testing = pd.read_csv("./Argentina/raw_Buenos Aires.csv")
+testing
+```
+
+We need to sort the data by datetime
+```{python}
+msno.matrix(testing, fontsize=4, label_rotation=45)
+```
