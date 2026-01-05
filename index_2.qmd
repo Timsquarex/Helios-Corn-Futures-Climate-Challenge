@@ -1,0 +1,261 @@
+---
+title: "Helios Corn Futures Data Challenge (EDA)"
+author: "Timothy Tey"
+date: today
+date-format: "D MMMM YYYY"
+categories: [code, analysis]
+toc: true
+execute:
+    error: false
+    freeze: true
+---
+
+# Import Libraries
+```{python}
+import pandas as pd
+import numpy as np
+import statistics
+import math
+import missingno as msno
+import copy
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+import os
+```
+
+# File Path
+```{python}
+hemisphere = ['South_Hemisphere', 'North_1_Hemisphere', 'North_2_Hemisphere']
+
+koppen_climate_type = ['Af', 'Aw', 'BSh', 'BSk', 'Cfa', 'Cfb', 'Csa', 'Cwa', 'Cwb', 'Dfa', 'Dfb', 'Dfc', 'Dwa']
+```
+
+# Import Main Dataset
+```{python}
+region_data = pd.read_csv('North_2_Hemisphere/Region_Dwa/Jilin.csv')
+region_data = region_data.drop(columns=['hemisphere', 'koppen', 'harvest_period'])
+region_data
+```
+
+```{python}
+print(region_data.shape)
+print(region_data.columns)
+
+region_data['climate_risk_cnt_locations_heat_stress'] = region_data['climate_risk_cnt_locations_heat_stress_risk_low'] * 1
++ region_data['climate_risk_cnt_locations_heat_stress_risk_medium'] * 2 + region_data['climate_risk_cnt_locations_heat_stress_risk_high'] * 3
+
+region_data['climate_risk_cnt_locations_cold_stress'] = region_data['climate_risk_cnt_locations_unseasonably_cold_risk_low'] * 1
++ region_data['climate_risk_cnt_locations_unseasonably_cold_risk_medium'] * 2 + region_data['climate_risk_cnt_locations_unseasonably_cold_risk_high'] * 3
+
+region_data['climate_risk_cnt_locations_excess_precip_stress'] = region_data['climate_risk_cnt_locations_excess_precip_risk_low'] * 1
++ region_data['climate_risk_cnt_locations_excess_precip_risk_medium'] * 2 + region_data['climate_risk_cnt_locations_excess_precip_risk_high'] * 3
+
+region_data['climate_risk_cnt_locations_drought_stress'] = region_data['climate_risk_cnt_locations_drought_risk_low'] * 1 + region_data['climate_risk_cnt_locations_drought_risk_medium'] * 2 + region_data['climate_risk_cnt_locations_drought_risk_high'] * 3
+
+region_data
+```
+
+# Time Series Plot (Climate Risks)
+```{python}
+import matplotlib.dates as mdates
+
+cols_to_plot = ['climate_risk_cnt_locations_heat_stress', 'climate_risk_cnt_locations_cold_stress', 'climate_risk_cnt_locations_excess_precip_stress', 'climate_risk_cnt_locations_drought_stress']
+
+nrows, ncols = 2, 2
+fig, axes = plt.subplots(
+    nrows = nrows,
+    ncols = ncols,
+    sharex = True,
+    figsize = (12, 8)
+)
+axes = axes.flatten() # turn 2x2 into 1D list
+
+for ax, col in zip(axes, cols_to_plot):
+    ax.step(
+        region_data['date_on'], 
+        region_data[col],
+        where='post'
+        )
+    ax.set_title(col, fontsize=10)
+    ax.set_ylabel("Risk Stress")
+    ax.grid(True, alpha=0.3)
+    ax.set_facecolor("white")
+
+for ax in axes:
+    ax.xaxis.set_major_locator(mdates.YearLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
+
+# Remove unused subplot if cols_to_plot < 4:
+for ax in axes[len(cols_to_plot): ]:
+    ax.remove()
+
+fig.suptitle("Risk Stress Time Series", fontsize=14)
+fig.autofmt_xdate(rotation=30)
+fig.patch.set_facecolor("white")
+
+plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+plt.show()
+```
+
+# Time Series Plot (Future Prices)
+```{python}
+cols_to_plot = ['futures_close_ZC_1', 'futures_close_ZC_2', 'futures_close_ZW_1', 'futures_close_ZS_1']
+
+region_data_2 = region_data.copy()
+region_data_2[cols_to_plot] = region_data_2[cols_to_plot].fillna(0)
+
+nrows, ncols = 2, 2
+fig, axes = plt.subplots(
+    nrows = nrows,
+    ncols = ncols,
+    sharex = True,
+    figsize = (12, 8)
+)
+axes = axes.flatten() # turn 2x2 into 1D list
+
+for ax, col in zip(axes, cols_to_plot):
+    ax.plot(
+        region_data_2['date_on'], 
+        region_data_2[col],
+        )
+    ax.set_title(col, fontsize=10)
+    ax.set_ylabel("Future Price")
+    ax.grid(True, alpha=0.3)
+    ax.set_facecolor("white")
+
+for ax in axes:
+    ax.xaxis.set_major_locator(mdates.YearLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
+
+# Remove unused subplot if cols_to_plot < 4:
+for ax in axes[len(cols_to_plot): ]:
+    ax.remove()
+
+fig.suptitle("Futures Time Series Plot", fontsize=14)
+fig.autofmt_xdate(rotation=30)
+fig.patch.set_facecolor("white")
+
+plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+plt.show()
+```
+
+# Distributional Plots (Climate Risks)
+```{python}
+cols_to_plot = ['climate_risk_cnt_locations_heat_stress', 'climate_risk_cnt_locations_cold_stress', 'climate_risk_cnt_locations_excess_precip_stress', 'climate_risk_cnt_locations_drought_stress']
+
+nrows, ncols = 2, 2
+fig, axes = plt.subplots(
+    nrows = nrows,
+    ncols = ncols,
+    sharex = True,
+    figsize = (12, 8)
+)
+axes = axes.flatten() # turn 2x2 into 1D list
+
+for ax, col in zip(axes, cols_to_plot):
+    ax.hist(
+        region_data[col],
+        )
+    ax.set_title(col, fontsize=10)
+    #ax.set_ylabel("Risk Stress")
+    ax.grid(True, alpha=0.3)
+    #ax.set_facecolor("white")
+
+# Remove unused subplot if cols_to_plot < 4:
+for ax in axes[len(cols_to_plot): ]:
+    ax.remove()
+
+fig.suptitle("Risk Stress Distribution", fontsize=14)
+#fig.patch.set_facecolor("white")
+plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+plt.show()
+```
+
+# Distributional Plots (Future Prices)
+```{python}
+cols_to_plot = ['futures_close_ZC_1', 'futures_close_ZC_2', 'futures_close_ZW_1', 'futures_close_ZS_1']
+
+nrows, ncols = 2, 2
+fig, axes = plt.subplots(
+    nrows = nrows,
+    ncols = ncols,
+    sharex = True,
+    figsize = (12, 8)
+)
+axes = axes.flatten() # turn 2x2 into 1D list
+
+for ax, col in zip(axes, cols_to_plot):
+    ax.hist(
+        region_data[col].dropna(),
+        )
+    ax.set_title(col, fontsize=10)
+    #ax.set_ylabel("Risk Stress")
+    ax.grid(True, alpha=0.3)
+    #ax.set_facecolor("white")
+
+# Remove unused subplot if cols_to_plot < 4:
+for ax in axes[len(cols_to_plot): ]:
+    ax.remove()
+
+fig.suptitle("Future Price Distribution", fontsize=14)
+#fig.patch.set_facecolor("white")
+plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+plt.show()
+```
+
+# Box Plots (Climate Risks)
+```{python}
+cols_to_plot = ['climate_risk_cnt_locations_heat_stress', 'climate_risk_cnt_locations_cold_stress', 'climate_risk_cnt_locations_excess_precip_stress', 'climate_risk_cnt_locations_drought_stress']
+
+nrows, ncols = 2, 2
+fig, axes = plt.subplots(
+    nrows = nrows,
+    ncols = ncols,
+    sharex = True,
+    figsize = (12, 8)
+)
+axes = axes.flatten() # turn 2x2 into 1D list
+
+for ax, col in zip(axes, cols_to_plot):
+    ax.boxplot(region_data[col])
+    ax.set_title(col, fontsize=10)
+
+# Remove unused subplot if cols_to_plot < 4:
+for ax in axes[len(cols_to_plot): ]:
+    ax.remove()
+
+fig.suptitle("Risk Stress Box Plot", fontsize=14)
+plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+plt.show()
+```
+
+# Box Plots (Future Prices)
+```{python}
+cols_to_plot = ['futures_close_ZC_1', 'futures_close_ZC_2', 'futures_close_ZW_1', 'futures_close_ZS_1']
+
+nrows, ncols = 2, 2
+fig, axes = plt.subplots(
+    nrows = nrows,
+    ncols = ncols,
+    sharex = True,
+    figsize = (12, 8)
+)
+axes = axes.flatten() # turn 2x2 into 1D list
+
+for ax, col in zip(axes, cols_to_plot):
+    ax.boxplot(
+    region_data[col].dropna(),
+    showfliers=False
+    )
+    ax.set_title(col, fontsize=10)
+
+# Remove unused subplot if cols_to_plot < 4:
+for ax in axes[len(cols_to_plot): ]:
+    ax.remove()
+
+fig.suptitle("Future Price Box Plot", fontsize=14)
+plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+plt.show()
+```

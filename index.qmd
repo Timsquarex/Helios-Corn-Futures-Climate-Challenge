@@ -1,5 +1,5 @@
 ---
-title: "Helios Corn Futures Data Challenge (EDA)"
+title: "Helios Corn Futures Data Challenge (Data Split)"
 author: "Timothy Tey"
 date: today
 date-format: "D MMMM YYYY"
@@ -120,32 +120,3 @@ for koppen, regions in n2_regions_categories.items():
 print("All dataset are succesfully categorised.")
 ```
 
-# 1. Nullity Plot(s)
-```{python}
-# for country, regions in country_region.items():
-#     num_regions = len(regions)
-#     ncols = 2
-#     nrows = math.ceil(num_regions/ncols)
-
-#     fig, axes = plt.subplots(nrows=nrows, ncols=ncols,
-#                             figsize=(12, 4 * nrows))
-#     fig.suptitle(f"Missing Data Overview: {country}", fontsize=16, fontweight="bold")
-
-#     if num_regions == 1:
-#         axes = [axes]
-#     else:
-#         axes = axes.flatten()
-
-#     for i, region in enumerate(regions):
-#         working_df = pd.read_csv(f"./{country}/raw_{region}.csv")
-
-#         msno.matrix(working_df, fontsize=4, label_rotation=45, ax=axes[i], sparkline=False)
-
-#         axes[i].set_title(f"Region: {region}", y=-0.25,fontsize=12)
-
-#     for j in range(i + 1, len(axes)):
-#         axes[j].axis('off')
-    
-#     plt.tight_layout()
-#     plt.show()
-```
