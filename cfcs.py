@@ -8,7 +8,7 @@ Score Evaluation functions for 2025 Helios Climate Risk Competition
 
 """
 import pandas as pd
-
+import numpy as np
 
 def compute_partial_correlations(df,by=['crop_name','country_name','date_on_month']):
     ## df: must be a dataframe with non-zero rows and at least two columns 
@@ -107,6 +107,38 @@ def cfcs(df):
     print(f'highest absolute correlation found is {round(max_abs_corr,3)}')
     print(f'final CFCS score is {round(cfcs,2)}')
     return scoreboard
+
+
+def sigcorr_report(df,features='climate_variable',sig_level=0.5):
+    '''
+        Generate a CFCS sub scores report for each feature
+        with significant correlations.
+        
+        Input dataframe must contain a correlation column and feature columns.
+    
+    '''
+    
+    df['correlation_abs'] = df.correlation.abs()
+    try:
+        df.loc[df['correlation_abs']<sig_level,['correlation_abs']] = np.nan
+        reportdf = df.groupby(features).agg({'correlation_abs':['mean','max','count'],\
+                                       'correlation':'count'\
+                                      })
+        ## compute CFCS score components for each feature
+    except TypeError:
+        print('sig_level must be a number between 0 and 1')
+        return None
+    except KeyError:
+        print('illegal features values')
+        return None
+        
+    reportdf.columns = ['avg_sig_corr','max_sig_corr','sig_corr_count','total_corr_count']
+    reportdf['sig_corr_ratio(%)'] = 100*reportdf['sig_corr_count']/reportdf['total_corr_count']
+    reportdf = reportdf[reportdf['avg_sig_corr'].notnull()]\
+               .loc[:,['avg_sig_corr','max_sig_corr','sig_corr_count','sig_corr_ratio(%)']]\
+               .round(3)
+    ## features without any significant correlation are not reported
+    return reportdf
 
 
 
