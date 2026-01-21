@@ -51,7 +51,10 @@ def compute_partial_correlations(df,by=['crop_name','country_name','date_on_mont
                                                   climate_risk_columns,\
                                                   futures_columns,\
                                                   include_groups=False
-                                                 ).reset_index()
+                                                 )
+            corr_tables = corr_tables\
+                          .reset_index(level=len(corr_tables.index.levels)-1,drop=True)\
+                          .reset_index()
             ## compute and combine the correlation table for each group
         except KeyError:
             print('illegal by values')
@@ -104,6 +107,7 @@ def cfcs(df):
     print(f'highest absolute correlation found is {round(max_abs_corr,3)}')
     print(f'final CFCS score is {round(cfcs,2)}')
     return scoreboard
+
 
 
 
