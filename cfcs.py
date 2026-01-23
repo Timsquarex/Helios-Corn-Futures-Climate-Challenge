@@ -23,8 +23,11 @@ def compute_partial_correlations(df,by=['crop_name','country_name','date_on_mont
         ## Note: dataframe must contain at least two non-null pairs
         ## to produce a non-null correlation
         
-        corr_matrix = df[climate_risk_columns+futures_columns].corr(method='pearson',min_periods=1)
+        corr_matrix = df[climate_risk_columns+futures_columns]\
+                      .corr(method='pearson',min_periods=2,numeric_only=True)
         ## corr() auto drop nan values before computing
+        ## number pairs must be at least two for computation
+        ## according to formula
         corr_table = corr_matrix.loc[climate_risk_columns,futures_columns]\
         .rename_axis(index='climate_variable',columns='futures_variable')\
         .stack().reset_index(name='correlation')
@@ -139,6 +142,7 @@ def sigcorr_report(df,features='climate_variable',sig_level=0.5):
                .round(3)
     ## features without any significant correlation are not reported
     return reportdf
+
 
 
 
