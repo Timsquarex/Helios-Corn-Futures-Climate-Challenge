@@ -120,7 +120,7 @@ def sigcorr_report(df,features='climate_variable',sig_level=0.5):
         Input dataframe must contain a correlation column and feature columns.
     
     '''
-    
+    df = df.copy()
     df['correlation_abs'] = df.correlation.abs()
     try:
         df.loc[df['correlation_abs']<=sig_level,['correlation_abs']] = np.nan
@@ -142,6 +142,7 @@ def sigcorr_report(df,features='climate_variable',sig_level=0.5):
                .round(3)
     ## features without any significant correlation are not reported
     return reportdf
+
 
 
 
