@@ -123,7 +123,7 @@ def sigcorr_report(df,features='climate_variable',sig_level=0.5):
     
     df['correlation_abs'] = df.correlation.abs()
     try:
-        df.loc[df['correlation_abs']<sig_level,['correlation_abs']] = np.nan
+        df.loc[df['correlation_abs']<=sig_level,['correlation_abs']] = np.nan
         reportdf = df.groupby(features).agg({'correlation_abs':['mean','max','count'],\
                                        'correlation':'count'\
                                       })
@@ -142,6 +142,7 @@ def sigcorr_report(df,features='climate_variable',sig_level=0.5):
                .round(3)
     ## features without any significant correlation are not reported
     return reportdf
+
 
 
 
