@@ -22,7 +22,7 @@ def compute_partial_correlations(df,by=['crop_name','country_name','date_on_mont
         ## compute correlations of each climate-futures variable pair
         ## Note: dataframe must contain at least two non-null pairs
         ## to produce a non-null correlation
-        
+
         corr_matrix = df[climate_risk_columns+futures_columns]\
                       .corr(method='pearson',min_periods=2,numeric_only=True)
         ## corr() auto drop nan values before computing
